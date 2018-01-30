@@ -13,7 +13,7 @@ const Server = () => {
   const { createServer } = require('http');
   
   const serverConfig = getServerConfiguration(appRootPath('.devtools.json'));
-  const config = Object.assign({ port: 9028, ip: '0.0.0.0', distRoot: 'dist', proxyServers: [] }, serverConfig);
+  const config = Object.assign({ port: 9028, ip: '0.0.0.0', distRoot: 'dist', proxyServers: [], }, serverConfig);
 
   const appRootPathDist = appRootPath(config.distRoot);
 
