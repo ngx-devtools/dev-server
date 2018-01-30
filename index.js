@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 
 const { 
   appRootPath, 
-  proxy, 
   getServerConfiguration, 
   cors,
   routes
@@ -26,9 +25,19 @@ const Server = () => {
   app.use(morgan('dev'));
   app.use(cors);
 
+  if (config['staticFolders']){
+    config.staticFolders.forEach(folder => {
+      if (typeof(folder) === 'string'){
+        app.use(`/${folder}`, express.static(appRootPath(folder)));
+      } else {
+        app.use(`/${folder.route}`, express.static(appRootPath(folder.path)));
+      }
+    });
+  }
+
   config.proxyServers.forEach(proxyServer => proxy(proxyServer, app));
 
-  routes(app, appRootPath('routes'));
+  routes(app, appRootPath('api'));
 
   app.all('/*', (req, res) => res.sendFile('index.html', { root: appRootPathDist }));  
 

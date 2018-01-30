@@ -1,3 +1,4 @@
+
 const request = require('request-promise');
 
 const getOptions = (target, req) => {
@@ -27,14 +28,14 @@ const getOptions = (target, req) => {
   return options;
 };
 
-const proxyServer = async (proxy, app) => {
-  app.all(route, (req, res, next) => {
+const proxyServer = (proxy, app) => {
+  app.all(route, async (req, res, next) => {
     let response;
     try {
-      response = await request(getOptions(proxy.target, req));
+      reponse = await request(getOptions(proxy.target, req));
       res.status(response.statusCode).send(response.body)
     } catch(e) {
-      res.status(response.statusCode).send()
+      res.status(response.statusCode).send(response.body);
     }
   });
 };
