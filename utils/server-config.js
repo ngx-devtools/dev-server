@@ -7,7 +7,13 @@ module.exports = (devToolsPath) => {
       serverConfig = Object.assign({}, devTools.server);
     }
   } 
-  return serverConfig;
+  const defaultConfig = { 
+    port: 9028, 
+    ip: '0.0.0.0', 
+    distRoot: 'dist', 
+    proxyServers: [], 
+  };
+  return Object.assign(defaultConfig, serverConfig);;
 };
 
 

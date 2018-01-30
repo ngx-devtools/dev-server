@@ -29,7 +29,7 @@ const getOptions = (target, req) => {
 };
 
 const proxyServer = (proxy, app) => {
-  app.all(route, async (req, res, next) => {
+  app.all(proxy.route, async (req, res, next) => {
     let response;
     try {
       reponse = await request(getOptions(proxy.target, req));

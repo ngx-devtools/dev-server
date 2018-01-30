@@ -6,17 +6,16 @@ const {
   appRootPath, 
   getServerConfiguration, 
   cors,
-  routes
+  routes,
+  proxy
 } = require('./utils');
 
 const Server = () => {
   const { createServer } = require('http');
-  
-  const serverConfig = getServerConfiguration(appRootPath('.devtools.json'));
-  const config = Object.assign({ port: 9028, ip: '0.0.0.0', distRoot: 'dist', proxyServers: [], }, serverConfig);
 
+  const config = getServerConfiguration(appRootPath('.devtools.json'));
   const appRootPathDist = appRootPath(config.distRoot);
-
+  
   const app = express();
 
   app.use('/', express.static(appRootPathDist));
