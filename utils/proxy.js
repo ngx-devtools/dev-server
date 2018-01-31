@@ -1,13 +1,12 @@
 
-const request = require('request-promise');
+const request = require('request');
 
 const getOptions = (target, req) => {
   const options = {
     uri: target + req.url,
     methid: req.method,
     headers: {
-      'content-type': req.headers['content-type'],
-      'authorization': req.headers['authorization'],
+      'content-type': 'application/json',
       'accept': req.headers['accept']
     },
     resolveWithFullResponse: true
@@ -28,15 +27,20 @@ const getOptions = (target, req) => {
   return options;
 };
 
+const requestAsync = (options) => {
+  return new Promise((resolve, reject) => {
+    request(options, (error, response, body) => {
+      if (error) reject({ error: error, statusCode: response.statusCode });
+      resolve({ error: error, statusCode: response.statusCode, body: body });
+    });
+  });
+};
+
 const proxyServer = (proxy, app) => {
-  app.all(proxy.route, async (req, res, next) => {
-    let response;
-    try {
-      reponse = await request(getOptions(proxy.target, req));
-      res.status(response.statusCode).send(response.body)
-    } catch(e) {
-      res.status(response.statusCode).send(response.body);
-    }
+  app.all(proxy.route, async(req, res, next) => {
+    const response = await requestAsync(getOptions(proxy.target, req));
+    if (response.error) return res.status(response.statusCode).send(response.error);
+    return res.status(response.statusCode).send(response.body);
   });
 };
 
