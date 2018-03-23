@@ -1,61 +1,31 @@
 const fs = require('fs');
 const path = require('path');
 
-
-const walk = (dir, regExcludes, done) => {
-  var results = [];
-
-  fs.readdir(dir, function (err, list) {
-    if (err) return done(err);
-
-    var pending = list.length;
-    if (!pending) return done(null, results);
-
-    list.forEach(function (file) {
-      file = path.join(dir, file);
-
-      var excluded = false;
-      var len = regExcludes.length;
-      var i = 0;
-
-      for (; i < len; i++) {
-        if (file.match(regExcludes[i])) {
-          excluded = true;
-        }
-      }
-
-      if(excluded === false) {
-        results.push(file);
-
-        fs.stat(file, function (err, stat) {
-          if (stat && stat.isDirectory()) {
-            walk(file, regExcludes, function (err, res) {
-              results = results.concat(res);
-              if (!--pending) { done(null, results); }
-            });
-          } else {
-            if (!--pending) { done(null, results); }
-          }
-          
-        });
-      } else {
-        if (!--pending) { done(null, results); }
-      }
-    });
-  });
-};
-
-const glob = (dir, includes = []) => {
+const walk = (dir, includes = []) => {
+  let results = [];
   const rootDir = path.resolve(dir);
-  return new Promise((resolve, reject) => {
-    const glob = require('./glob');
-    walk(rootDir, [], (error, results) => {
-      if (error) reject();
-      if (includes.length <= 0) resolve(results); 
-      results = results.filter(result => includes.includes(path.extname(result)));
-      resolve(results)
-    });
+  const files = fs.readdirSync(rootDir);
+  files.forEach(list => {
+    list = path.join(rootDir, list)
+    const stat = fs.statSync(list);
+    if (stat.isDirectory()) {
+      results = results.concat(walk(list, includes));
+    } 
+    if (stat.isFile()) {
+      if (includes.length <= 0) { 
+        results.push(list);
+      } else if (includes.includes(path.extname(list))) {
+        results.push(list); 
+      }
+    }
   });
+  return results;
 };
 
-module.exports = glob;
+exports.globSync = (dir, includes = []) => {
+  if (!(fs.existsSync(path.resolve(dir)))) return [];
+  return walk(dir, includes);
+};
+exports.globAsync = (dir, includes = []) => {
+  return Promise.resolve(walk(dir, includes));
+};
