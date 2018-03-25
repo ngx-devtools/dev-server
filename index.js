@@ -1,56 +1,31 @@
-const express = require('express');
-const morgan = require('morgan');
-const bodyParser = require('body-parser');
+const server = require('gulp-develop-server');
+const path = require('path');
 
-const { 
-  appRootPath, 
-  getServerConfiguration, 
-  cors,
-  routes,
-  proxy
-} = require('./utils');
+const watch = require('./utils/watch');
 
-const Server = () => {
-  const { createServer } = require('http');
+const serverWatch = [ 
+  '--server-watch', 
+  '--server-watch=true', 
+  '--server-watch true' 
+];
 
-  const config = getServerConfiguration(appRootPath('.devtools.json'));
-  const appRootPathDist = appRootPath(config.distRoot);
-  
-  const app = express();
+const serveWatch = server => {
+  const index = process.argv.findIndex(_watch => serverWatch.includes(_watch));
+  const isBoolean = (process.argv[index + 1] === 'true' || process.argv[index + 1] === 'false');
+  if (index >= 0) {
+    if (isBoolean || process.argv[index + 1] !== 'false') watch(server);
+  }
+  return Promise.resolve(server);
+};
 
-  app.use('/', express.static(appRootPathDist));
-
-  app.use(bodyParser.json());
-  app.use(morgan('dev'));
-  app.use(cors);
-
-  if (config['staticFolders']){
-    config.staticFolders.forEach(folder => {
-      if (typeof(folder) === 'string'){
-        app.use(`/${folder}`, express.static(appRootPath(folder)));
-      } else {
-        app.use(`/${folder.route}`, express.static(appRootPath(folder.path)));
-      }
+const serverStart = () => {
+  return new Promise((resolve, reject) => {
+    server.listen({ path: path.join(__dirname, 'utils', 'start.js') },
+    error => {
+      if (error) reject();
+      resolve(server);
     });
-  }
+  });
+};
 
-  config.proxyServers.forEach(proxyServer => proxy(proxyServer, app));
-
-  routes(app, appRootPath('api'));
-
-  app.all('/*', (req, res) => res.sendFile('index.html', { root: appRootPathDist }));  
-
-  return {
-    start () {
-      const server = createServer(app);
-      server.listen(config.port, config.ip)
-        .on('listening', () => {
-          const { port, address } = server.address();
-          console.log(`Express server started on port ${port} at ${address}.`);   
-        });  
-    }
-  }
-
-} 
-
-module.exports = Server;
+exports.serverStart = () => serverStart().then(server => serveWatch(server));

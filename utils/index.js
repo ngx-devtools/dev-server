@@ -8,3 +8,4 @@ exports.proxy = require('./proxy');
 exports.getServerConfiguration = require('./server-config');
 exports.cors = require('./cors');
 exports.routes = require('./app-route');
+exports.server = require('./server');

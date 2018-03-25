@@ -18,7 +18,10 @@
   "homepage": "https://github.com/ngx-devtools/server#readme",
   "dependencies": {
     "body-parser": "1.18.2",
+    "chokidar": "2.0.2",
     "express": "4.16.2",
+    "gulp-develop-server": "0.5.2",
+    "gulp-livereload": "3.8.1",
     "morgan": "1.9.0",
     "request": "2.83.0"
   }
