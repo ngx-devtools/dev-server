@@ -1,6 +1,5 @@
 const path = require('path');
 const fs = require('fs');
-const livereload = require('gulp-livereload');
 
 const promisify = require('util').promisify;
 
@@ -28,10 +27,6 @@ const injectLiveReload = () => {
   .then(fileBuffer => {
     const contents = fileBuffer.toString('utf8').replace('<!-- livereaload -->', template(defaults))
     return writeFileAsync(file, contents);
-  })
-  .then(() => {
-    livereload.listen();
-    return Promise.resolve();
   });
 };
 

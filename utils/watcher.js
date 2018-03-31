@@ -8,11 +8,14 @@ const liveReloadParams = [
   '--livereload', 
   '--livereload=true', 
   '--livereload true' 
+], 
+watchParams = [
+  '--watch',
+  '--watch=true',
+  '--watch true'
 ];
 
 let isReady = false;
-
-const log = (event, path) => console.log(`> ${event}: ${path}.`);
 
 const watchReady = () => {
   isReady = true;
@@ -33,7 +36,6 @@ const reloadPage = (file) => {
 
 const watcher = (server) => {
   const onServerFileChanged = (file) => {
-    console.log('hey')
     return new Promise((resolve, reject) => {
       server.changed(error => {
         if (error) reject();
@@ -44,7 +46,7 @@ const watcher = (server) => {
     .catch(error => console.log(error));
   };
 
-  const onClientChanged = (event, file) => {
+  const onClientChanged = (file) => {
     try {
       const build = require('@ngx-devtools/build');
       return build.onClientChanged(event, file)
@@ -63,24 +65,32 @@ const watcher = (server) => {
           case WATCH_EVENT.ADD:
           case WATCH_EVENT.CHANGE: 
             if (path.includes('src')) {
-              console.log('Client');
-              onClientChanged(event, path);
+              onClientFileChanged(path);
             } else {
-              console.log('Server');
               onServerFileChanged(path);
             }         
             break;
           case WATCH_EVENT.DELETE:
-            log(event, path); break;
+            console.log(`> ${event}: ${path}.`); break;
         }
       } 
     });
 };
 
+const watch = (server) => {
+  watcher(server); return Promise.resolve();
+};
+
+const liveReload = () => {
+  const injectReload = () => injectLiveReload().then(() => {
+    livereload.listen();
+    return Promise.resolve();
+  });
+  return isProcess(liveReloadParams) ? injectReload() : Promise.resolve();
+};
+
 const watchLiveReload = (server) => {
-  const liveReload = isProcess(liveReloadParams) ? injectLiveReload : Promise.resolve;
-  const watch = (server) => { watcher(server); return Promise.resolve(); }
-  return Promise.all([ liveReload(), watch(server)  ]);
+  return (isProcess(watchParams)) ? Promise.all([ liveReload(), watch(server) ]) : Promise.resolve();
 };
 
 module.exports = watchLiveReload;
