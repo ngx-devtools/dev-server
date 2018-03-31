@@ -5,11 +5,8 @@ const chokidar = require('chokidar')
 
 const { globSync }= require('./glob');
 
-const serverReloads = [ 
-  '--server-reload', 
-  '--server-reload=true', 
-  '--server-reload true' 
-];
+const serverReloads = [ '--server-reload', '--server-reload=true', '--server-reload true' ];
+const watchParams = [ '--server-watch', '--server-watch=true', '--server-watch true' ];
 
 const watchFiles = () => {
   let watchFiles = [ path.resolve('api') ];
@@ -30,12 +27,14 @@ const watchFiles = () => {
   return watchFiles;
 };
 
-const liveReload = file => {
-  const index = process.argv.findIndex(reload => serverReloads.includes(reload));
+const isProcess = list => {
+  let result = false;
+  const index = process.argv.findIndex(value => list.includes(value));
   const isBoolean = (process.argv[index + 1] === 'true' || process.argv[index + 1] === 'false');
   if (index >= 0) {
-    if (isBoolean || process.argv[index + 1] !== 'false') livereload.changed(file);
+    if (isBoolean || process.argv[index + 1] !== 'false') result = true;
   }
+  return result;
 };
 
 const watch = server => {
@@ -47,7 +46,8 @@ const watch = server => {
     return new Promise((resolve, reject) => {
       server.changed(error => {
         if (error) reject();
-        liveReload(file); resolve();
+        if (isProcess(serverReloads)) livereload.changed(file); 
+        resolve();
       });
     }).catch(error => console.log(error));
   };
@@ -66,4 +66,9 @@ const watch = server => {
     });
 };
 
-module.exports = watch;
+const serverWatch =server => {
+  if (isProcess(watchParams)) watch(server);
+  return Promise.resolve(server);
+};
+
+module.exports = serverWatch;

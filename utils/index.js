@@ -9,3 +9,7 @@ exports.getServerConfiguration = require('./server-config');
 exports.cors = require('./cors');
 exports.routes = require('./app-route');
 exports.server = require('./server');
+exports.injectLiveReload = require('./inject-livereload');
+exports.serverWatch = require('./watch');
+exports.watcher = require('./watcher');
+exports.isProcess = require('./to-process');

@@ -16,6 +16,9 @@
     "url": "https://github.com/ngx-devtools/server/issues"
   },
   "homepage": "https://github.com/ngx-devtools/server#readme",
+  "peerDependencies": {
+    "@ngx-devtools": "latest"
+  },
   "dependencies": {
     "body-parser": "1.18.2",
     "chokidar": "2.0.2",

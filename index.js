@@ -1,26 +1,11 @@
 const server = require('gulp-develop-server');
-const path = require('path');
 
-const watch = require('./utils/watch');
-
-const serverWatch = [ 
-  '--server-watch', 
-  '--server-watch=true', 
-  '--server-watch true' 
-];
-
-const serveWatch = server => {
-  const index = process.argv.findIndex(_watch => serverWatch.includes(_watch));
-  const isBoolean = (process.argv[index + 1] === 'true' || process.argv[index + 1] === 'false');
-  if (index >= 0) {
-    if (isBoolean || process.argv[index + 1] !== 'false') watch(server);
-  }
-  return Promise.resolve(server);
-};
+const { join } = require('path');
+const { watcher } = require('./utils');
 
 const serverStart = () => {
   return new Promise((resolve, reject) => {
-    server.listen({ path: path.join(__dirname, 'utils', 'start.js') },
+    server.listen({ path: join(__dirname, 'utils', 'start.js') },
     error => {
       if (error) reject();
       resolve(server);
@@ -28,4 +13,4 @@ const serverStart = () => {
   });
 };
 
-exports.serverStart = () => serverStart().then(server => serveWatch(server));
+exports.serverStart = () => Promise.all([ serverStart(), watcher(server) ]);
