@@ -46,10 +46,10 @@ const watcher = (server) => {
     .catch(error => console.log(error));
   };
 
-  const onClientChanged = (file) => {
+  const onClientFileChanged = (file) => {
     try {
       const build = require('@ngx-devtools/build');
-      return build.onClientChanged(event, file)
+      return build.onClientFileChanged(file)
         .then(file => reloadPage(file))
         .catch(error => console.log(error));
     } catch(e) {
