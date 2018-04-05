@@ -3,6 +3,18 @@ const fs = require('fs');
 
 const promisify = require('util').promisify;
 
+const getRootDir = () => {
+  let rootDir = 'dist';
+  const devtoolsPath = path.resolve('.devtools');
+  if (fs.existsSync(devtoolsPath)) {
+    const devtools = require(devtoolsPath);
+    if (devtools['server'] && devtools.server['distRoot']){
+      rootDir = devtools.server.distRoot;
+    }
+  }
+  return rootDir;
+};
+
 const injectLiveReload = () => {
   const defaults = {
     port: 35729,
@@ -14,7 +26,8 @@ const injectLiveReload = () => {
     const scriptSrc = opts.host + ':' + opts.port + '/' + opts.script + '?snipver=' + opts.snipver;
     return '\n<script>document.write(\'<script src="' + scriptSrc + '"></\' + \'script>\');</script>';
   };
-  const file = path.resolve('dist', 'index.html');
+
+  const file = path.resolve(getRootDir(), 'index.html');
 
   const readFileAsync = promisify(fs.readFile);
   const writeFileAsync = promisify(fs.writeFile);
