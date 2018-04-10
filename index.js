@@ -1,7 +1,7 @@
 const server = require('gulp-develop-server');
 
 const { join } = require('path');
-const { watcher } = require('./utils');
+const { onServiceFileChanged } = require('./utils');
 
 const serverStart = () => {
   return new Promise((resolve, reject) => {
@@ -13,4 +13,5 @@ const serverStart = () => {
   });
 };
 
-exports.serverStart = () => Promise.all([ serverStart(), watcher(server) ]);
+exports.serverStart = async () => await serverStart();
+exports.onServerFileChanged = async (file) => await onServiceFileChanged(server, file);

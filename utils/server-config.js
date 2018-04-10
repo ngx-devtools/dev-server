@@ -8,7 +8,7 @@ module.exports = (devToolsPath) => {
     }
   } 
   const defaultConfig = { 
-    port: 9028, 
+    port: 4000, 
     ip: '0.0.0.0', 
     distRoot: 'dist', 
     proxyServers: [], 

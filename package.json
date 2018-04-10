@@ -16,15 +16,10 @@
     "url": "https://github.com/ngx-devtools/server/issues"
   },
   "homepage": "https://github.com/ngx-devtools/server#readme",
-  "peerDependencies": {
-    "@ngx-devtools/build": "latest"
-  },
   "dependencies": {
     "body-parser": "1.18.2",
-    "chokidar": "2.0.3",
     "express": "4.16.3",
     "gulp-develop-server": "0.5.2",
-    "gulp-livereload": "3.8.1",
     "morgan": "1.9.0",
     "request": "2.85.0"
   }

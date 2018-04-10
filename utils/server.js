@@ -38,7 +38,7 @@ const Server = () => {
 
   config.proxyServers.forEach(proxyServer => proxy(proxyServer, app));
 
-  routes(app, appRootPath('api'));
+  routes(app, appRootPath('server'));
 
   app.all('/*', (req, res) => res.sendFile('index.html', { root: appRootPathDist }));  
 
