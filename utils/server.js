@@ -16,7 +16,9 @@ const Server = () => {
   const { createServer } = require('http');
 
   const config = getServerConfiguration(appRootPath('.devtools.json'));
-  const appRootPathDist = appRootPath(config.distRoot);
+
+  const folderRoot = config.folders.find(folder => (folder['root'] && folder['root'] === true));
+  const appRootPathDist = appRootPath(folderRoot.path);
   
   const app = express();
 
@@ -26,8 +28,8 @@ const Server = () => {
   app.use(morgan('dev'));
   app.use(cors);
 
-  if (config['staticFolders']){
-    config.staticFolders.forEach(folder => {
+  if (config['folders']){
+    config.folders.forEach(folder => {
       if (typeof(folder) === 'string'){
         app.use(`/${folder}`, express.static(appRootPath(folder)));
       } else {
