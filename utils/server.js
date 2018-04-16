@@ -7,7 +7,6 @@ const { join, resolve } = require('path');
 if (!(process.env.APP_ROOT_PATH)) process.env.APP_ROOT_PATH = resolve();
 
 const appRootPath = (...paths) => join(process.env.APP_ROOT_PATH, ...paths);
-const getServerConfiguration = require('./server-config');
 const cors = require('./cors');
 const routes = require('./app-route');
 const proxy = require('./proxy'); 
@@ -15,7 +14,7 @@ const proxy = require('./proxy');
 const Server = () => {
   const { createServer } = require('http');
 
-  const config = getServerConfiguration(appRootPath('.devtools.json'));
+  const config =Object.assign({}, require('./server-config'));
 
   const folderRoot = config.folders.find(folder => (folder['root'] && folder['root'] === true));
   const appRootPathDist = appRootPath(folderRoot.path);

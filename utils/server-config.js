@@ -1,7 +1,10 @@
 
-module.exports = (devToolsPath) => {
+const path = require('path');
+const fs = require('fs');
+
+const serverConfig = (devToolsPath) => {
   const serverConfig = {};
-  if (require('fs').existsSync(devToolsPath)) {
+  if (fs.existsSync(devToolsPath)) {
     const devTools = require(devToolsPath);
     if (devTools.hasOwnProperty('server')) {
      Object.assign(serverConfig, devTools.server);
@@ -43,4 +46,5 @@ module.exports = (devToolsPath) => {
   return defaultConfig;
 };
 
+module.exports = serverConfig(path.resolve('.devtools.json'));
 
