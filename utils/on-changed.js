@@ -10,6 +10,5 @@ const onServerFileChanged = (server, file) => {
 };
 
 module.exports = (server, file) => { 
-  const config = require('./server-config')(path.resolve('.devtools.json'));
   return (file && !(file.includes('src'))) ? onServerFileChanged(server, file) : Promise.resolve();
 };
