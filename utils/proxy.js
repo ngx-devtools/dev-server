@@ -37,7 +37,7 @@ const requestAsync = (options) => {
 };
 
 const proxyServer = (proxy, app) => {
-  app.all(proxy.route, async(req, res, next) => {
+  app.all(proxy.route, async (req, res, next) => {
     const response = await requestAsync(getOptions(proxy.target, req));
     if (response.error) return res.status(response.statusCode).send(response.error);
     return res.status(response.statusCode).send(response.body);
