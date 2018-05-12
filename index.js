@@ -2,16 +2,19 @@ const server = require('gulp-develop-server');
 
 const { join } = require('path');
 const { onServerFileChanged } = require('./utils');
+const { ROUTE_METHOD, RouterFactory } = require('./builder')
 
-const serverStart = () => {
+const serverStart = (options = { path: join(__dirname, 'utils', 'start.js') }) => {
   return new Promise((resolve, reject) => {
-    server.listen({ path: join(__dirname, 'utils', 'start.js') },
-    error => {
+    server.listen(options, error => {
       if (error) reject();
       resolve(server);
     });
   });
 };
 
-exports.serverStart = async () => await serverStart();
-exports.onServerFileChanged = async (file) => await onServerFileChanged(server, file);
+exports.onServerFileChanged = file => onServerFileChanged(server, file);
+
+exports.serverStart = serverStart
+exports.ROUTE_METHOD = ROUTE_METHOD;
+exports.RouterFactory = RouterFactory;
