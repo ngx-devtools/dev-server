@@ -1,6 +1,6 @@
 {
   "name": "@ngx-devtools/server",
-  "version": "1.7.0",
+  "version": "1.7.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,6 +21,6 @@
     "express": "4.16.3",
     "gulp-develop-server": "0.5.2",
     "morgan": "1.9.0",
-    "request": "2.85.0"
+    "request": "2.87.0"
   }
 }
