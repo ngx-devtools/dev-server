@@ -3,6 +3,8 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 
 const { join, resolve } = require('path');
+const isProcess = require('./to-process');
+const verboseParams = [ '--verbose', '--verbose=true', '--verbose true' ];
 
 if (!(process.env.APP_ROOT_PATH)) process.env.APP_ROOT_PATH = resolve();
 
@@ -14,7 +16,7 @@ const proxy = require('./proxy');
 const Server = () => {
   const { createServer } = require('http');
 
-  const config =Object.assign({}, require('./server-config'));
+  const config = Object.assign({}, require('./server-config'));
 
   const folderRoot = config.folders.find(folder => (folder['root'] && folder['root'] === true));
   const appRootPathDist = appRootPath(folderRoot.path);
@@ -22,9 +24,9 @@ const Server = () => {
   const app = express();
 
   app.use('/', express.static(appRootPathDist));
-
   app.use(bodyParser.json());
-  app.use(morgan('dev'));
+  
+  if (isProcess(verboseParams)) app.use(morgan('dev')); 
   app.use(cors);
 
   if (config['folders']){
