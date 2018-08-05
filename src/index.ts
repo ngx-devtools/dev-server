@@ -94,7 +94,7 @@ class Server {
 
   static async openBrowser(){
     return opn(`http://${Server._options.host}:${Server._options.port}`, {
-      app: ['google chrome',  '--incognito']
+      app: ['google chrome',  '--incognito'], wait: false
     })
   }
 
