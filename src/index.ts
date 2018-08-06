@@ -5,6 +5,7 @@ import express, { Application } from 'express';
 
 import { ProxyServer, Proxy } from './proxy';
 import { globFiles } from './file';
+import { Browser, BrowserOptions } from './browser';
 
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
@@ -92,12 +93,6 @@ class Server {
     })(this)
   }
 
-  static async openBrowser(){
-    return opn(`http://${Server._options.host}:${Server._options.port}`, {
-      app: ['google chrome',  '--incognito'], wait: false
-    })
-  }
-
   static async start(options?: DevServer){
     const _devServerOptions = options || { path: join(__dirname, 'start'), args: process.argv }
     return new Promise((resolve, reject) => {
@@ -106,11 +101,13 @@ class Server {
         resolve(devServer);
       });
     }).then(devServer => {
+      const { host, port } = Server._options;
       return isProcess(openBrowserParams)
-        ? Server.openBrowser().then(devServer => devServer)
+        ? Browser.open({ host, port }).then(devServer => devServer)
         : Promise.resolve(devServer)
     });
   }
+
 
   private get appRootPathDist() {
     const folderRoot = Server._options.folders.find(folder => (folder['root'] && folder['root'] === true));
