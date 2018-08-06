@@ -5,7 +5,7 @@ import express, { Application } from 'express';
 
 import { ProxyServer, Proxy } from './proxy';
 import { globFiles } from './file';
-import { Browser, BrowserOptions } from './browser';
+import { Browser } from './browser';
 
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
