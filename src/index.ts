@@ -4,7 +4,7 @@ import { createServer } from 'http';
 import { AddressInfo } from 'net';
 import express, { Application } from 'express';
 
-import { Proxy } from 'proxy';
+import { Proxy } from './proxy';
 import { globFiles } from './file';
 import { Process } from './process-argv';
 import { ServerDefaultOptions, ServerOptions } from './server-options';
@@ -27,8 +27,10 @@ export class Server {
 
   constructor(options?: ServerOptions) {
     (async function(self) {
+      const argvPort = Process.getArgv('port', { default: self._options.port, type: 'number' });
 
       self._options = options || self._options;
+      self._options.port = argvPort.port;
       
       self.app = express();
       self.proxy = new Proxy(self.app);

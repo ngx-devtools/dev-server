@@ -3,6 +3,7 @@ import { Browser, BrowserOptions } from 'browser';
 import { join } from 'path';
 
 import { Process } from './process-argv';
+import { ServerDefaultOptions } from './server-options';
 
 const server = require('gulp-develop-server');
 
@@ -23,18 +24,26 @@ class DevServer {
         resolve(server);
       }) 
     }).then(server => {
+      const argv = Process.getArgv('port', { default: ServerDefaultOptions.port, type: 'number' });
       const browserOptions: BrowserOptions = {
-        host: 'localhost',
-        port: Process.getArgv('port', { default: 4000, type: 'number' })
+        host: ServerDefaultOptions.host,
+        port: argv.port
       }
       return Process.hasArgvs(openBrowserParams)
         ? Browser.open(browserOptions).then(devServer => server)
         : Promise.resolve(server);
     });
   } 
+
+  static async onServerFileChanged(file: string) {
+    return new Promise((resolve, reject) => {
+      server.changed(error => {
+        if (error) reject();
+        resolve(file);
+      });
+    });
+  }
   
 }
-
-
 
 export { BootstrapOptions, DevServer }

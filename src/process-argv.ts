@@ -16,14 +16,14 @@ class Process {
     return result;
   }
 
-  static getArgv(argvParameter: string, options?: ArgvOptions) {
-    let result = { [argvParameter]: options.default };
-    const index = process.argv.findIndex(value => `--${argvParameter}` === value);
+  static getArgv(argv: string, options?: ArgvOptions) {
+    let result = { [argv]: options.default };
+    const index = process.argv.findIndex(value => `--${argv}` === value);
     if (index >= 0) {
       const value = process.argv[index + 1];
       if (value && !value.includes('--')) {
         result = {
-          [argvParameter]: options.type ? ((options.type === 'number') ? parseInt(value): value): value
+          [argv]: options.type ? ((options.type === 'number') ? parseInt(value): value): value
         }
       }
     }
