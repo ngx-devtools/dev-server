@@ -4,54 +4,31 @@ import { createServer } from 'http';
 import { AddressInfo } from 'net';
 import express, { Application } from 'express';
 
-import { ProxyServer, Proxy } from 'proxy';
-import { globFiles } from 'file';
-import { Process } from 'process-argv';
+import { Proxy } from 'proxy';
+import { globFiles } from './file';
+import { Process } from './process-argv';
+import { ServerDefaultOptions, ServerOptions } from './server-options';
 
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 
 const verboseParams = [ '--verbose', '--verbose=true', '--verbose true' ];
 
-interface StaticFolder {
-  route: string;
-  root?: boolean;
-  path: string;
-}
-
-interface ServerOptions {
-  port?: any;
-  host?: string;
-  proxyServers?: ProxyServer[];
-  folders?: StaticFolder[];
-  routeDir?: string;
-}
-
 if (!(process.env.APP_ROOT_PATH)) {
   process.env.APP_ROOT_PATH = resolve();
 }
 
-class Server {
+export class Server {
 
   private app: Application;
   private proxy: Proxy;
 
-  private static _options: ServerOptions = {
-    port: Process.getArgv('port', { default: 4000, type: 'number' }), 
-    host: 'localhost', 
-    proxyServers: [], 
-    folders: [
-      { "route": "", "root": true, "path": "dist" },
-      { "route": "dist", "path": "dist" },
-      { "route": "node_modules", "path": "node_modules" }
-    ],
-    routeDir: 'server'
-  }
+  private _options: ServerOptions = { ...ServerDefaultOptions }
 
   constructor(options?: ServerOptions) {
     (async function(self) {
 
-      Server._options = options || Server._options;
+      self._options = options || self._options;
       
       self.app = express();
       self.proxy = new Proxy(self.app);
@@ -65,16 +42,16 @@ class Server {
       self.app.use('/', express.static(self.appRootPathDist));
       self.app.use(bodyParser.json());
   
-      for (let i = 0; i < Server._options.folders.length; i++) {
-        self.addStaticFolder(Server._options.folders[i]);
+      for (let i = 0; i < self.options.folders.length; i++) {
+        self.addStaticFolder(self.options.folders[i]);
       }
 
-      for (let i = 0; i < Server._options.proxyServers.length; i++) {
-        self.proxy.add(Server._options.proxyServers[i]);
+      for (let i = 0; i < self.options.proxyServers.length; i++) {
+        self.proxy.add(self.options.proxyServers[i]);
       }
 
-      if (existsSync(join(process.env.APP_ROOT_PATH, Server._options.routeDir))) {
-        const routeFiles = await globFiles(`${Server._options.routeDir}/**/*.route.js`);
+      if (existsSync(join(process.env.APP_ROOT_PATH,  self.options.routeDir))) {
+        const routeFiles = await globFiles(`${self.options.routeDir}/**/*.route.js`);
         for (let i = 0; i < routeFiles.length; i++) {
           self.app.use('/api', require(routeFiles[i]));
         }
@@ -85,7 +62,7 @@ class Server {
   }
 
   private get appRootPathDist() {
-    const folderRoot = Server._options.folders.find(folder => (folder['root'] && folder['root'] === true));
+    const folderRoot = this._options.folders.find(folder => (folder['root'] && folder['root'] === true));
     return this.appRootPath(folderRoot.path);
   }
 
@@ -102,7 +79,7 @@ class Server {
   }
 
   get options() {
-    return Server._options;
+    return this._options;
   }
 
   corsHandler(req: any, res: any, next: any) {
@@ -114,7 +91,7 @@ class Server {
 
   listen() {
     const server = createServer(this.app);
-    server.listen(Server._options.port, Server._options.host)
+    server.listen(this.options.port, this.options.host)
       .on('listening', function(){
         const { port, address } = server.address() as AddressInfo;
         console.log(`Express server started on port ${port} at ${address}.`);   
@@ -122,5 +99,3 @@ class Server {
   }
 
 }
-
-export { Server, StaticFolder, ServerOptions }
