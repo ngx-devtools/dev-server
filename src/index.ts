@@ -1,79 +1,41 @@
 import { join, resolve } from 'path';
+import { existsSync } from 'fs';
 import { createServer } from 'http';
 import { AddressInfo } from 'net';
 import express, { Application } from 'express';
 
-import { ProxyServer, Proxy } from './proxy';
+import { Proxy } from './proxy';
 import { globFiles } from './file';
-import { Browser } from './browser';
+import { Process } from './process-argv';
+import { ServerDefaultOptions, ServerOptions } from './server-options';
 
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
-const devServer = require('gulp-develop-server');
-const opn = require('opn');
 
 const verboseParams = [ '--verbose', '--verbose=true', '--verbose true' ];
-const openBrowserParams = [ '--open', '--open=true', '--open true' ];
-
-interface StaticFolder {
-  route: string;
-  root?: boolean;
-  path: string;
-}
-
-interface DevServer {
-  path: string;
-  args: any;
-}
-
-interface ServerOptions {
-  port?: number;
-  host?: string;
-  proxyServers?: ProxyServer[];
-  folders?: StaticFolder[];
-  routes?: string[];
-}
-
-const isProcess = (list) => {
-  let result = false;
-  const index = process.argv.findIndex(value => list.includes(value));
-  const isBoolean = (process.argv[index + 1] === 'true' || process.argv[index + 1] === 'false');
-  if (index >= 0) {
-    if (isBoolean || process.argv[index + 1] !== 'false') result = true;
-  }
-  return result;
-};
 
 if (!(process.env.APP_ROOT_PATH)) {
   process.env.APP_ROOT_PATH = resolve();
 }
 
-class Server {
+export class Server {
 
   private app: Application;
   private proxy: Proxy;
 
-  private static _options: ServerOptions = {
-    port: 4000, 
-    host: 'localhost', 
-    proxyServers: [], 
-    folders: [
-      { "route": "", "root": true, "path": "dist" },
-      { "route": "dist", "path": "dist" },
-      { "route": "node_modules", "path": "node_modules" }
-    ],
-    routes: [ 'server' ]
-  }
+  private _options: ServerOptions = { ...ServerDefaultOptions }
 
   constructor(options?: ServerOptions) {
     (async function(self) {
+      const argvPort = Process.getArgv('port', { default: self._options.port, type: 'number' });
 
-      Server._options = options || Server._options;
+      self._options = options || self._options;
+      self._options.port = argvPort.port;
       
       self.app = express();
       self.proxy = new Proxy(self.app);
   
-      if (isProcess(verboseParams)) {
+      if (Process.hasArgvs(verboseParams)) {
         self.app.use(morgan('dev')) 
       }
 
@@ -82,35 +44,27 @@ class Server {
       self.app.use('/', express.static(self.appRootPathDist));
       self.app.use(bodyParser.json());
   
-      Server._options.folders.forEach(folder => self.addStaticFolder(folder));
-  
-      Server._options.proxyServers.forEach(proxyServer => self.proxy.add(proxyServer));
-  
-      const routeFiles = await globFiles(Server._options.routes.map(route => `${route}/**/*.route.js`));
-      routeFiles.forEach(routeFile => self.app.use('/api', require(routeFile)));
+      for (let i = 0; i < self.options.folders.length; i++) {
+        self.addStaticFolder(self.options.folders[i]);
+      }
+
+      for (let i = 0; i < self.options.proxyServers.length; i++) {
+        self.proxy.add(self.options.proxyServers[i]);
+      }
+
+      if (existsSync(join(process.env.APP_ROOT_PATH,  self.options.routeDir))) {
+        const routeFiles = await globFiles(`${self.options.routeDir}/**/*.route.js`);
+        for (let i = 0; i < routeFiles.length; i++) {
+          self.app.use('/api', require(routeFiles[i]));
+        }
+      }
   
       self.app.all('/*', (req, res) => res.sendFile('index.html', { root: self.appRootPathDist }));  
     })(this)
   }
 
-  static async start(options?: DevServer){
-    const _devServerOptions = options || { path: join(__dirname, 'start'), args: process.argv }
-    return new Promise((resolve, reject) => {
-      devServer.listen(_devServerOptions, error => {
-        if (error) reject();
-        resolve(devServer);
-      });
-    }).then(devServer => {
-      const { host, port } = Server._options;
-      return isProcess(openBrowserParams)
-        ? Browser.open({ host, port }).then(devServer => devServer)
-        : Promise.resolve(devServer)
-    });
-  }
-
-
   private get appRootPathDist() {
-    const folderRoot = Server._options.folders.find(folder => (folder['root'] && folder['root'] === true));
+    const folderRoot = this._options.folders.find(folder => (folder['root'] && folder['root'] === true));
     return this.appRootPath(folderRoot.path);
   }
 
@@ -126,6 +80,10 @@ class Server {
     } 
   }
 
+  get options() {
+    return this._options;
+  }
+
   corsHandler(req: any, res: any, next: any) {
     res.setHeader('Access-Control-Allow-Origin', req.get('Origin') || '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
@@ -135,7 +93,7 @@ class Server {
 
   listen() {
     const server = createServer(this.app);
-    server.listen(Server._options.port, Server._options.host)
+    server.listen(this.options.port, this.options.host)
       .on('listening', function(){
         const { port, address } = server.address() as AddressInfo;
         console.log(`Express server started on port ${port} at ${address}.`);   
@@ -143,5 +101,3 @@ class Server {
   }
 
 }
-
-export { Server, StaticFolder, ServerOptions, DevServer }
