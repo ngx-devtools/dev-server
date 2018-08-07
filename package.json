@@ -29,7 +29,8 @@
   "devDependencies": {
     "@ngx-devtools/common": "beta",
     "@types/express": "4.16.0",
-    "@types/request": "2.47.1"
+    "@types/request": "2.47.1",
+    "@types/yargs": "^11.1.1"
   },
   "typings": "dist/server.d.ts"
 }

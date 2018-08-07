@@ -2,7 +2,7 @@
 const opn = require('opn');
 
 export interface BrowserOptions {
-  port: number;
+  port: any;
   host: string;
 }
 
