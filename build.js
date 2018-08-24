@@ -33,9 +33,7 @@ const { createRollupConfig, ngxBuild , mkdirp, writeFileAsync } =  require('@ngx
       format: 'cjs'
     }
   })
-  
-  await Promise.all([ 
-    ngxBuild(PKG_NAME, rollupConfig), 
-    writeFileAsync('dist/start.js', startContents.join('\n')) 
-  ])
+
+  await ngxBuild(PKG_NAME, rollupConfig)
+  await writeFileAsync('dist/start.js', startContents.join('\n')) 
 })();
