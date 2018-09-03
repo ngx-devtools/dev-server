@@ -1,7 +1,8 @@
-const { buildCopyPackageFile, rollupBuild, createRollupConfig, clean, mkdirp, writeFileAsync } =  require('@ngx-devtools/common');
+const { createRollupConfig, ngxBuild , mkdirp, writeFileAsync } =  require('@ngx-devtools/common');
 
 (async function(){
   const PKG_NAME = 'server';
+  const ENTRY_FILE = `.tmp/${PKG_NAME}.ts`;
 
   const startContents = [
     `const { Server } = require('./server');`,
@@ -9,14 +10,11 @@ const { buildCopyPackageFile, rollupBuild, createRollupConfig, clean, mkdirp, wr
     `server.listen();`
   ]
 
-  const writeStartFile = () => {
-    mkdirp('dist');
-    return writeFileAsync('dist/start.js', startContents.join('\n'));
-  }
+  await mkdirp('dist');
 
   const rollupConfig = createRollupConfig({ 
-    input: `src/${PKG_NAME}.ts`, 
-    tsconfig: 'src/tsconfig.json',
+    input: ENTRY_FILE, 
+    tsconfig: '.tmp/tsconfig.json',
     overrideExternal: true,
     external: [
       'request',
@@ -35,8 +33,7 @@ const { buildCopyPackageFile, rollupBuild, createRollupConfig, clean, mkdirp, wr
       format: 'cjs'
     }
   })
-  
-  Promise.all([ clean('dist') ]).then(() => {
-    return Promise.all([ buildCopyPackageFile(PKG_NAME), rollupBuild(rollupConfig), writeStartFile() ])
-  });
+
+  await ngxBuild(PKG_NAME, rollupConfig)
+  await writeFileAsync('dist/start.js', startContents.join('\n')) 
 })();

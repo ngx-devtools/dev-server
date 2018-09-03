@@ -8,6 +8,7 @@ import { Proxy } from './proxy';
 import { globFiles } from './file';
 import { Process } from './process-argv';
 import { ServerDefaultOptions, ServerOptions } from './server-options';
+import { Devtools } from './devtools';
 
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
@@ -27,10 +28,13 @@ export class Server {
 
   constructor(options?: ServerOptions) {
     (async function(self) {
+     
       const argvPort = Process.getArgv('port', { default: self._options.port, type: 'number' });
 
       self._options = options || self._options;
       self._options.port = argvPort.port;
+
+      Devtools.update(self._options);
       
       self.app = express();
       self.proxy = new Proxy(self.app);
