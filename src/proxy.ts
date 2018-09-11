@@ -1,5 +1,9 @@
 import request, { CoreOptions, UriOptions } from 'request';
 import { Application, Request, Response } from 'express';
+import { extname } from 'path';
+import * as url from 'url';
+
+const mime = require('mime');
 
 enum HTTP_METHOD {
   GET = 'get',
@@ -8,7 +12,9 @@ enum HTTP_METHOD {
   PUT = 'put'
 }
 
-interface RequestOptions extends CoreOptions, UriOptions { }
+interface RequestOptions extends CoreOptions, UriOptions { 
+  contentType?: string;
+}
 
 interface ProxyRequestOptions extends Request { 
   body: Body;
@@ -33,6 +39,7 @@ class Proxy {
       const options =  Proxy.createOptions(proxy.target, req);
       const response = await Proxy.requireAsync(options);
       if (response.error) return res.status(response.statusCode).send(response.error);
+      if (options.contentType) res.contentType(options.contentType);
       return res.status(response.statusCode).send(response.body);
     });
   }
@@ -41,11 +48,11 @@ class Proxy {
     return new Promise((resolve, reject) => {
       request(options, (error: any, response: any, body: any) => {
         if (error) reject({ error: error, statusCode: response.statusCode });
-        resolve({ error: error, statusCode: response.statusCode, body: body });
+        resolve({ error: error, statusCode: response.statusCode, body: body, response: response });
       });
     });
   }
- 
+
   private static createOptions(target: string, req: ProxyRequestOptions) {
     const options: RequestOptions = {
       uri: target + req.url,
@@ -66,6 +73,14 @@ class Proxy {
         options.qs = req.query;
       }
       break;  
+    }
+    const { pathname } = url.parse(options.uri as string);
+    const extName = extname(pathname.split('/').pop());
+    if ('.jpg .jpeg .png .woff .woff2'.includes(extName)) {
+      options.encoding = null;
+    }
+    if ('.svg'.includes(extName)) {
+      options.contentType = mime.lookup(extName.replace('.', ''));
     }
     return options;
   }

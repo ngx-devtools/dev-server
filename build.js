@@ -26,7 +26,9 @@ const { createRollupConfig, ngxBuild , mkdirp, writeFileAsync } =  require('@ngx
       'fs',
       'util',
       'path',
-      'net'
+      'net',
+      'url',
+      'mime'
     ],
     output: {
       file: `dist/${PKG_NAME}.js`, 
