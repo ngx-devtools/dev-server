@@ -6,5 +6,5 @@ const { onAfterBuild } = require('./build-after');
   const PKG_NAME = 'server';
   
   await ngxBuild(PKG_NAME, getRollupConfig())
-  await onAfterBuild();
+  await onAfterBuild()
 })();
