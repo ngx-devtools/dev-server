@@ -1,9 +1,10 @@
 {
   "name": "@ngx-devtools/server",
-  "version": "1.10.0",
+  "version": "2.0.0-beta.20",
   "description": "",
-  "main": "index.js",
+  "main": "dist/server.js",
   "scripts": {
+    "build": "node build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,9 +19,17 @@
   "homepage": "https://github.com/ngx-devtools/server#readme",
   "dependencies": {
     "body-parser": "1.18.3",
-    "express": "4.16.3",
+    "express": "4.16.4",
     "gulp-develop-server": "0.5.2",
-    "morgan": "1.9.0",
-    "request": "2.87.0"
-  }
+    "minimatch": "3.0.4",
+    "morgan": "1.9.1",
+    "opn": "5.4.0",
+    "request": "2.88.0"
+  },
+  "devDependencies": {
+    "@ngx-devtools/common": "2.0.0-beta.20",
+    "@types/express": "4.16.0",
+    "@types/request": "2.47.1"
+  },
+  "typings": "dist/server.d.ts"
 }
